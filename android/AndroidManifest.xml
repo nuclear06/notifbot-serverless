@@ -36,17 +36,13 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
 
-      <intent-filter android:autoVerify="true">
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="http" android:host="notification-bot.appspot.com" />
-        <data android:scheme="https" android:host="notification-bot.appspot.com" />
-        <data android:scheme="http" android:host="notifbot.fishy.me" />
-        <data android:scheme="https" android:host="notifbot.fishy.me" />
-      </intent-filter>
-
     </activity>
+
+    <activity
+        android:name=".TelegramConfigActivity"
+        android:theme="@style/Theme"
+        android:label="Telegram Configuration"
+      />
 
     <activity
         android:name="ShareReceiver"

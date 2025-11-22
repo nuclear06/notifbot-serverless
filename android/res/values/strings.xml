@@ -75,16 +75,26 @@
       A Google Play URL:&lt;br />
       https://play.google.com/store/apps/details?id=com.smartthings.android
       &lt;/li>
-      &lt;li>&amp;nbsp;
-      A NotifBot URL:&lt;br />
-      https://notifbot.fishy.me/c/12345/deadbeef
-      &lt;/li>
     &lt;/ul>
 
     Press back button (or use back gesture) to cancel.
   </string>
   <string name="go">Go</string>
   <string name="magic_invalid_uri">Invalid magic text: \"%1$s\".</string>
+
+  <!-- Telegram Configuration -->
+  <string name="telegram_config_needed_title">Telegram Configuration Required</string>
+  <string name="telegram_config_needed_text">
+    Please configure your Telegram Bot to start receiving notifications.
+  </string>
+  <string name="telegram_config_success">Telegram configuration completed successfully!</string>
+  <string name="telegram_step1_instruction">
+    Step 1: Enter your Telegram Bot Token.
+    \n\nIf you don\'t have a bot yet, talk to @BotFather on Telegram to create one.
+  </string>
+  <string name="telegram_step2_instruction">
+    Step 2: Send a message to @%1$s on Telegram, then click the button below.
+  </string>
 
   <string name="service_succeed">
     Successfully connected to service!
@@ -94,20 +104,7 @@
     Not connected to Telegram bot
   </string>
   <string name="notif_text">
-    Please click this notification to connect to Telegram bot.
-  </string>
-  <string name="service_failed_title">
-    Invalid service URL
-  </string>
-  <string name="service_failed_text">
-    Please click %1$s button to re-connect to Telegram bot.
-  </string>
-  <string name="init_service_text">
-    Please click %1$s button to connect to Telegram bot.
-  </string>
-  <string name="service_net_fail">
-    Cannot connect to service due to network failure.
-    Please try again later.
+    Please configure your Telegram Bot to receive notifications.
   </string>
 
   <!-- Notification channel -->

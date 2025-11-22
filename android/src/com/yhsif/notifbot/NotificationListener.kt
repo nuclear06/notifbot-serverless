@@ -179,7 +179,6 @@ class NotificationListener : NotificationListenerService() {
     sbn: StatusBarNotification,
     rm: NotificationListenerService.RankingMap,
   ) {
-    HttpSender.initEngine(this)
     handleNotif(NotificationListener.getPkgSet(this), sbn)
   }
 
@@ -208,8 +207,6 @@ class NotificationListener : NotificationListenerService() {
           return@forReturn
         }
 
-        val pref = getSharedPreferences(MainActivity.PREF, 0)
-        val url = pref.getString(MainActivity.KEY_SERVICE_URL, "")!!
         val onNetFail = {
           addToRetryQueue(
             RetryTuple(
@@ -220,22 +217,14 @@ class NotificationListener : NotificationListenerService() {
             ),
           )
         }
-        // Sanity check
-        val uri = Uri.parse(url)
-        if (
-          uri.getScheme() == MainActivity.SCHEME_HTTPS &&
-          uri.getHost() == MainActivity.SERVICE_HOST
-        ) {
-          HttpSender.send(
-            this@NotificationListener,
-            url,
-            label,
-            text,
-            onSuccess(sbn.getKey()),
-            onFailure,
-            onNetFail,
-          )
-        }
+        TelegramSender.send(
+          this@NotificationListener,
+          label,
+          text,
+          onSuccess(sbn.getKey()),
+          onFailure,
+          onNetFail,
+        )
       }
     }
   }
@@ -330,29 +319,17 @@ class NotificationListener : NotificationListenerService() {
 
   suspend fun retry() {
     withContext(Dispatchers.Default) {
-      val pref = getSharedPreferences(MainActivity.PREF, 0)
-      val url = pref.getString(MainActivity.KEY_SERVICE_URL, "")!!
-      // Sanity check
-      val uri = Uri.parse(url)
-      if (
-        uri.getScheme() == MainActivity.SCHEME_HTTPS &&
-        uri.getHost() == MainActivity.SERVICE_HOST
-      ) {
-        for (tuple in getAndClearRetryQueue()) {
-          val (_, label, key, text) = tuple
-          val onNetFail = { addToRetryQueue(tuple) }
-          HttpSender.send(
-            this@NotificationListener,
-            url,
-            label,
-            text,
-            onSuccess(key),
-            onFailure,
-            onNetFail,
-          )
-        }
-      } else {
-        onFailure()
+      for (tuple in getAndClearRetryQueue()) {
+        val (_, label, key, text) = tuple
+        val onNetFail = { addToRetryQueue(tuple) }
+        TelegramSender.send(
+          this@NotificationListener,
+          label,
+          text,
+          onSuccess(key),
+          onFailure,
+          onNetFail,
+        )
       }
     }
   }

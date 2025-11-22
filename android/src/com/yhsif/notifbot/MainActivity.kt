@@ -39,10 +39,8 @@ class MainActivity :
   companion object {
     const val PREF = "com.yhsif.notifbot"
     const val KEY_PKGS = "packages"
-    const val KEY_SERVICE_URL = "service"
-    const val SERVICE_HOST = "notifbot.fishy.me"
-    const val SERVICE_HOST_2 = "notification-bot.appspot.com"
     const val PREFIX_APP_ID = "market://details?id="
+    const val REQUEST_CODE_CONFIG = 1001
 
     // For google play url.
     // The URL should be either
@@ -57,11 +55,8 @@ class MainActivity :
     const val SCHEME_HTTP = "http"
     const val SCHEME_HTTPS = "https"
 
-    val TELEGRAM_URI = Uri.parse("https://t.me/AndroidNotificationBot?start=0")
     val RE_URI = Regex("""[^\s]+://[^\s]+""")
     val RE_APP_ID = Regex("""[a-zA-Z0-9\._-]+""")
-
-    lateinit var serviceDialog: AlertDialog
 
     fun showToast(ctx: Context, text: String) {
       val msg = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -119,54 +114,6 @@ class MainActivity :
       showToast(ctx, ctx.getString(R.string.receiver_wrong_text, text))
     }
 
-    fun handleTextService(ctx: Context, uri: Uri): Boolean {
-      if (uri.getHost() != SERVICE_HOST && uri.getHost() != SERVICE_HOST_2) {
-        return false
-      }
-      val url = "$SCHEME_HTTPS://${SERVICE_HOST}${uri.getPath()}"
-      HttpSender.send(
-        ctx,
-        url,
-        ctx.getString(R.string.app_name),
-        ctx.getString(R.string.service_succeed),
-        {
-          NotificationListener.cancelTelegramNotif(ctx)
-          showToast(ctx, ctx.getString(R.string.service_succeed))
-          ctx.getSharedPreferences(PREF, 0).edit {
-            putString(KEY_SERVICE_URL, url)
-          }
-          serviceDialog.let { d ->
-            if (d.isShowing()) {
-              d.dismiss()
-            }
-          }
-        },
-        {
-          AlertDialog.Builder(ctx)
-            .setCancelable(true)
-            .setIcon(R.mipmap.icon)
-            .setTitle(ctx.getString(R.string.service_failed_title))
-            .setMessage(
-              ctx.getString(
-                R.string.service_failed_text,
-                ctx.getString(android.R.string.ok),
-              ),
-            )
-            .setPositiveButton(
-              android.R.string.ok,
-              DialogInterface.OnClickListener() { dialog, _ ->
-                dialog.dismiss()
-                ctx.startActivity(Intent(Intent.ACTION_VIEW, TELEGRAM_URI))
-              },
-            )
-            .create()
-            .show()
-        },
-        { showToast(ctx, ctx.getString(R.string.service_net_fail)) },
-      )
-      return true
-    }
-
     fun handleText(ctx: Context, text: String?): Boolean {
       if (text == null) {
         return false
@@ -177,13 +124,6 @@ class MainActivity :
         msg = uri
         if (handleTextPackage(ctx, uri)) {
           return true
-        }
-        try {
-          if (handleTextService(ctx, Uri.parse(uri))) {
-            return true
-          }
-        } catch (_: Throwable) {
-          // do nothing
         }
       } else if (RE_APP_ID.matches(text)) {
         if (handleTextPackage(ctx, PREFIX_APP_ID + text)) {
@@ -202,32 +142,14 @@ class MainActivity :
         return Html.fromHtml(text)
       }
     }
-
-    fun tryClip(ctx: Context) {
-      val clipboard =
-        ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-      clipboard.getPrimaryClip()?.getItemAt(0)?.let { item ->
-        val text = item.coerceToText(ctx).toString()
-        RE_URI.find(text)?.value?.let { uri ->
-          try {
-            handleTextService(ctx, Uri.parse(uri))
-          } catch (_: Throwable) {
-            // do nothing
-          }
-        }
-      }
-    }
   }
 
   var prev: Set<String> = setOf()
 
   lateinit var adapter: PkgAdapter
-  lateinit var magicDialog: AlertDialog
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
-    HttpSender.initEngine(this)
 
     setContentView(R.layout.main)
     SettingsActivity.adjustPaddingFor35Plus(this, findViewById(R.id.main_view))
@@ -245,60 +167,11 @@ class MainActivity :
       rv.setLayoutManager(LinearLayoutManager(this))
     }
 
-    val view = getLayoutInflater().inflate(R.layout.magic, null)
-    view.findViewById<TextView>(R.id.magic_text).let { tv ->
-      tv.setText(fromHtmlWrapper(getString(R.string.magic_text)))
-      tv.setMovementMethod(LinkMovementMethod.getInstance())
-    }
-    view.findViewById<View>(R.id.go).setOnClickListener(this)
-    view.findViewById<EditText>(R.id.magic_url).let { et ->
-      et.setOnEditorActionListener(this)
-      et.setImeActionLabel(getString(R.string.go), KeyEvent.KEYCODE_ENTER)
-    }
-
-    magicDialog = AlertDialog.Builder(this)
-      .setTitle(R.string.magic_box)
-      .setView(view)
-      .create()
-
-    serviceDialog = AlertDialog.Builder(this)
-      .setCancelable(true)
-      .setIcon(R.mipmap.icon)
-      .setTitle(getString(R.string.no_service))
-      .setMessage(
-        getString(
-          R.string.init_service_text,
-          getString(android.R.string.ok),
-        ),
-      )
-      .setPositiveButton(
-        android.R.string.ok,
-        DialogInterface.OnClickListener() { dialog, _ ->
-          dialog.dismiss()
-          startActivity(Intent(Intent.ACTION_VIEW, TELEGRAM_URI))
-        },
-      )
-      .create()
-
     setSupportActionBar(findViewById<Toolbar>(R.id.app_bar))
   }
 
   override fun onResume() {
-    var checkService = true
-
-    // Handle notification-bot.appspot.com URL
-    getIntent()?.let { intent ->
-      if (intent.getAction() == Intent.ACTION_VIEW) {
-        intent.getData()?.let { uri ->
-          val valid = handleTextService(this, uri)
-          checkService = !valid
-          if (!valid) {
-            // Pass it along
-            startActivity(Intent(Intent.ACTION_VIEW, uri))
-          }
-        }
-      }
-    }
+    super.onResume()
 
     // Check the listener service status
     if (!NotificationListener.connected) {
@@ -336,34 +209,37 @@ class MainActivity :
         )
         .create()
         .show()
-    } else if (checkService) {
-      // Check service url
-      val pref = getSharedPreferences(PREF, 0)
-      var url = pref.getString(KEY_SERVICE_URL, "")!!
-      val onFailure = {
-        serviceDialog.show()
-        tryClip(this)
-      }
-      var uri = Uri.parse(url)
-      var onSuccess = {}
-      if (uri.getHost() == SERVICE_HOST_2) {
-        uri = uri.buildUpon().authority(SERVICE_HOST).build()
-        url = uri.toString()
-        onSuccess = {
-          pref.edit {
-            putString(KEY_SERVICE_URL, url)
+    } else {
+      // Check Telegram configuration
+      val storage = SecureStorage(this)
+      if (!storage.isConfigured()) {
+        AlertDialog.Builder(this)
+          .setCancelable(true)
+          .setIcon(R.mipmap.icon)
+          .setTitle(getString(R.string.telegram_config_needed_title))
+          .setMessage(getString(R.string.telegram_config_needed_text))
+          .setPositiveButton(android.R.string.ok) { _, _ ->
+            startActivityForResult(
+              Intent(this, TelegramConfigActivity::class.java),
+              REQUEST_CODE_CONFIG
+            )
           }
-        }
-      }
-      if (uri.getScheme() == SCHEME_HTTPS && uri.getHost() == SERVICE_HOST) {
-        HttpSender.checkUrl(url, onSuccess, onFailure)
-      } else {
-        onFailure()
+          .setNegativeButton(android.R.string.cancel) { dialog, _ ->
+            dialog.dismiss()
+          }
+          .create()
+          .show()
       }
     }
 
     refreshData()
-    super.onResume()
+  }
+
+  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    super.onActivityResult(requestCode, resultCode, data)
+    if (requestCode == REQUEST_CODE_CONFIG && resultCode == RESULT_OK) {
+      showToast(this, getString(R.string.telegram_config_success))
+    }
   }
 
   override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -375,8 +251,11 @@ class MainActivity :
     when (item.getItemId()) {
       R.id.action_settings ->
         startActivity(Intent(this, SettingsActivity::class.java))
-      R.id.action_box ->
-        magicDialog.show()
+      R.id.action_telegram_config ->
+        startActivityForResult(
+          Intent(this, TelegramConfigActivity::class.java),
+          REQUEST_CODE_CONFIG
+        )
       else -> return super.onOptionsItemSelected(item)
     }
     return true
@@ -384,10 +263,6 @@ class MainActivity :
 
   // for View.OnClickListener
   override fun onClick(v: View) {
-    if (v.getId() == R.id.go) {
-      doMagicGo()
-      return
-    }
     findViewById<RecyclerView>(R.id.pkg_list).let { rv ->
       val i = rv.getChildLayoutPosition(v)
       adapter.let { a ->
@@ -425,25 +300,7 @@ class MainActivity :
 
   // for TextView.OnEditorActionListener
   override fun onEditorAction(v: TextView?, id: Int, ev: KeyEvent?): Boolean {
-    when (id) {
-      EditorInfo.IME_ACTION_GO -> {
-        doMagicGo()
-        return true
-      }
-      else -> return false
-    }
-  }
-
-  fun doMagicGo() {
-    magicDialog.let { d ->
-      d.findViewById<EditText>(R.id.magic_url).let { text ->
-        if (d.isShowing() && handleText(this, text?.getText().toString())) {
-          d.dismiss()
-          text?.setText("")
-          refreshData()
-        }
-      }
-    }
+    return false
   }
 
   fun removePkg(pkg: String) {
