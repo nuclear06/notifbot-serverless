@@ -4,6 +4,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     >
   <item
+      android:id="@+id/action_add_app"
+      android:title="@string/add_app"
+      app:showAsAction="never"
+    />
+  <item
+      android:id="@+id/action_error_log"
+      android:title="@string/error_log"
+      app:showAsAction="never"
+    />
+  <item
       android:id="@+id/action_telegram_config"
       android:title="Telegram Config"
       app:showAsAction="never"

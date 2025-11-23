@@ -2,6 +2,19 @@
 
 ## How do I add an app to NotifBot?
 
+There are two ways to add apps:
+
+**Method 1: From App List (Recommended)**
+
+1. Open NotifBot app
+1. Tap the menu (⋮) in the top-right corner
+1. Select "Add App"
+1. Browse or search for the app you want to add
+1. Tap on the app to add it
+1. You should see a Toast message as confirmation
+
+**Method 2: Share from Google Play**
+
 Basically, share the app from Google Play to NotifBot.
 Here are the detailed steps:
 

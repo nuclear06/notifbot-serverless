@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
-    package="${PACKAGE}"
-    android:versionCode="39"
-    android:versionName="0.9.5"
     >
 
   <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="36" />
@@ -42,6 +39,18 @@
         android:name=".TelegramConfigActivity"
         android:theme="@style/Theme"
         android:label="Telegram Configuration"
+      />
+
+    <activity
+        android:name=".AppPickerActivity"
+        android:theme="@style/Theme"
+        android:label="@string/add_app_title"
+      />
+
+    <activity
+        android:name=".ErrorLogActivity"
+        android:theme="@style/Theme"
+        android:label="@string/error_log_title"
       />
 
     <activity

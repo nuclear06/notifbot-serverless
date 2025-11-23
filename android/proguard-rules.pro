@@ -14,6 +14,13 @@
 # Security Crypto
 -keep class androidx.security.crypto.** { *; }
 
+# Google Tink (used by Security Crypto)
+-keep class com.google.crypto.tink.** { *; }
+-dontwarn com.google.crypto.tink.**
+
+# Google Error Prone annotations (missing at runtime, safe to ignore)
+-dontwarn com.google.errorprone.annotations.**
+
 # Kotlin Coroutines
 -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
 -keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}

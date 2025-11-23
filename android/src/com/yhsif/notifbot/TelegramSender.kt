@@ -84,6 +84,12 @@ class TelegramSender {
           client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
               Log.e(TAG, "Network error sending message", e)
+              ErrorLogActivity.logError(
+                ctx,
+                "Network Error",
+                "Network failure while sending to Telegram",
+                "Error: ${e.message}"
+              )
               onNetFail?.run()
             }
             
@@ -93,7 +99,14 @@ class TelegramSender {
                   Log.i(TAG, "Message sent successfully")
                   onSuccess?.run()
                 } else {
-                  Log.e(TAG, "Failed to send message: HTTP ${response.code}")
+                  val body = response.body?.string() ?: ""
+                  Log.e(TAG, "Failed to send message: HTTP ${response.code}, Body: $body")
+                  ErrorLogActivity.logError(
+                    ctx,
+                    "Telegram API Error",
+                    "HTTP ${response.code}: ${response.message}",
+                    "Response: $body"
+                  )
                   onFailure?.run()
                 }
               }
@@ -102,6 +115,12 @@ class TelegramSender {
           
         } catch (e: Exception) {
           Log.e(TAG, "Error preparing request", e)
+          ErrorLogActivity.logError(
+            ctx,
+            "Request Error",
+            "Failed to prepare Telegram request",
+            "Error: ${e.message}\n${e.stackTraceToString()}"
+          )
           onFailure?.run()
         }
       }

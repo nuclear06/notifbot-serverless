@@ -249,6 +249,10 @@ class MainActivity :
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     when (item.getItemId()) {
+      R.id.action_add_app ->
+        startActivity(Intent(this, AppPickerActivity::class.java))
+      R.id.action_error_log ->
+        startActivity(Intent(this, ErrorLogActivity::class.java))
       R.id.action_settings ->
         startActivity(Intent(this, SettingsActivity::class.java))
       R.id.action_telegram_config ->

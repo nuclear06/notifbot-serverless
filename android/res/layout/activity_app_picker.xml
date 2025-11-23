@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+  <androidx.appcompat.widget.Toolbar
+      android:id="@+id/app_bar"
+      android:layout_width="match_parent"
+      android:layout_height="?attr/actionBarSize"
+      android:background="?attr/colorPrimary"
+      android:elevation="4dp"
+      android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+      app:title="@string/add_app_title"
+    />
+  <EditText
+      android:id="@+id/search_box"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:hint="@string/search_apps_hint"
+      android:padding="@dimen/margin_half"
+      android:inputType="text"
+      android:imeOptions="actionSearch"
+      android:maxLines="1"
+    />
+  <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/app_list"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_weight="1"
+      android:padding="@dimen/margin_half"
+    />
+</LinearLayout>

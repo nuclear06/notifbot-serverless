@@ -146,8 +146,15 @@ class NotificationListener : NotificationListenerService() {
 
   val onFailure: () -> Unit = {
     GlobalScope.launch(Dispatchers.Main) {
-      val intent = Intent(Intent.ACTION_VIEW, MainActivity.TELEGRAM_URI)
       ctx = this@NotificationListener
+      ErrorLogActivity.logError(
+        ctx,
+        "Telegram Send Failure",
+        "Failed to send notification to Telegram",
+        "Please check your Telegram bot configuration"
+      )
+      val intent = Intent(ctx, ErrorLogActivity::class.java)
+      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       val notifBuilder = NotificationCompat.Builder(ctx, channelId)
         .setSmallIcon(R.drawable.icon_notif)
         .setCategory(Notification.CATEGORY_ERROR)
