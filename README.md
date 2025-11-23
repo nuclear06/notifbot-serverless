@@ -1,29 +1,41 @@
 # NotifBot
 
-An [Android app][play] and [Telegram bot][bot] that forwards Android
-notifications to Telegram.
+An Android application that forwards notifications to Telegram.
 
-[![Get it on Google Play](https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=com.yhsif.notifbot)
+[中文文档](README_zh.md)
 
-## Building
+## About This Fork
 
-For Android part, the building system used is [Bazel].
-You only need to manually install Bazel,
-and Bazel will get all the dependencies for you
-(including Kotlin and third-party Bazel rules).
+This is a fork of [fishy/notifbot](https://github.com/fishy/notifbot) with the following changes:
 
-The Bazel rules depends on the `ANDROID_HOME` environment variable.
+### 1. Serverless Architecture for Privacy
 
-Run [`tools/release.sh`](android/tools/release.sh) to sign the apk with a
-release key. [More details].
+- Removed backend server dependency
+- Android client communicates directly with Telegram Bot API
+- No third-party servers involved
+- Removed all logging from original project
+
+### 2. App Selection Interface
+
+- Added in-app application picker with search functionality
+- Google Play sharing method still supported
+
+### 3. Error Logging
+
+- Built-in error log viewer for troubleshooting failed notifications
+- Records HTTP errors and API responses
+
+### 4. FOSS Compliance
+
+- Replaced proprietary dependencies with FOSS alternatives (OkHttp)
+- All dependencies are Apache License 2.0
+
+## Build
+
+```bash
+./gradlew assembleRelease
+```
 
 ## License
 
-BSD 3-Clause, refer to LICENSE file for more details.
-
-Google Play and the Google Play logo are trademarks of Google LLC.
-
-[play]: https://play.google.com/store/apps/details?id=com.yhsif.notifbot
-[bot]: https://t.me/AndroidNotificationBot?start=1
-[Bazel]: https://bazel.build/
-[More details]: https://developer.android.com/studio/publish/app-signing.html#signing-manually
+BSD 3-Clause License. See [LICENSE](LICENSE) for details.
