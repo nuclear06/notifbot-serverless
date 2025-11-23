@@ -32,6 +32,18 @@ This is a fork of [fishy/notifbot](https://github.com/fishy/notifbot) with the f
 
 ## Build
 
+### Debug Build
+
+```bash
+./gradlew assembleDebug
+```
+
+### Release Build
+
+1. Copy `keystore.properties.example` to `keystore.properties`
+2. Edit `keystore.properties` with your keystore information
+3. Build release APK:
+
 ```bash
 ./gradlew assembleRelease
 ```

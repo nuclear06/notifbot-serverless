@@ -32,6 +32,18 @@
 
 ## 构建
 
+### 调试版本
+
+```bash
+./gradlew assembleDebug
+```
+
+### 发布版本
+
+1. 复制 `keystore.properties.example` 为 `keystore.properties`
+2. 编辑 `keystore.properties` 填入您的密钥库信息
+3. 构建发布版 APK：
+
 ```bash
 ./gradlew assembleRelease
 ```
