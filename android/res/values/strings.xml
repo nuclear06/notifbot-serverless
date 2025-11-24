@@ -11,7 +11,7 @@
 
   <string name="main_hint">
     These are the apps you added, click to remove:
-    (&lt;a href="https://github.com/fishy/notifbot/blob/master/FAQ.md">How do I add apps?&lt;/a>)
+    (&lt;a href="https://github.com/nuclear06/notifbot-serverless/blob/master/FAQ.md">How do I add apps?&lt;/a>)
   </string>
 
   <string name="dialog_title">Confirm</string>

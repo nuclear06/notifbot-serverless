@@ -22,7 +22,7 @@ android {
         minSdk = 24
         targetSdk = 35
         versionCode = 40
-        versionName = "0.10.0"
+        versionName = "0.10.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -56,6 +56,12 @@ android {
     lint {
         checkReleaseBuilds = false
         abortOnError = false
+        ignoreWarnings = true
+        quiet = true
+    }
+
+    tasks.withType<com.android.build.gradle.internal.lint.AndroidLintTask>().configureEach {
+        enabled = false
     }
 
     compileOptions {

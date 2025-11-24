@@ -14,5 +14,12 @@ dependencyResolutionManagement {
     }
 }
 
+// Configure build cache settings
+buildCache {
+    local {
+        directory = File(rootDir, "build-cache")
+    }
+}
+
 rootProject.name = "NotifBot"
 include(":android")

@@ -26,13 +26,8 @@ Here are the detailed steps:
 
 ## How do I connect with Telegram?
 
-The Telegram bot is
-[@AndroidNotificationBot](https://t.me/AndroidNotificationBot?start=0).
+You have to create your own Telegram bot and get the bot token. The app has instructions to configure the Telegram bot token when you first open it. The token is stored locally after encryption.
 
-You can use either the `/start` command or the "START" button to get an URL.
+## Will other users see my notifications?
 
-Open the URL with NotifBot app will connect the app with the bot.
-
-## How do I disconnect with Telegram?
-
-You can use `/stop` command in Telegram bot to revoke the connection URL.
+No. The Telegram Bot API requires specifying a receiver chat ID, which is unique to every user. Only you can see your notifications.
