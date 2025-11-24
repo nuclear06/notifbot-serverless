@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.NameNotFoundException
@@ -193,6 +194,22 @@ class NotificationListener : NotificationListenerService() {
     if (!connected) {
       return
     }
+    
+    // Check if screen locked only mode is enabled
+    val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+    val screenLockedOnly = prefs.getBoolean(
+      SettingsActivity.KEY_SCREEN_LOCKED_ONLY,
+      SettingsActivity.DEFAULT_SCREEN_LOCKED_ONLY
+    )
+    
+    if (screenLockedOnly) {
+      val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+      if (!keyguardManager.isKeyguardLocked) {
+        // Screen is not locked, skip sending notification
+        return
+      }
+    }
+    
     GlobalScope.launch(Dispatchers.Default) forReturn@{
       val pkg = sbn.getPackageName().lowercase()
       if (checkPackage(pkgs, pkg, sbn)) {

@@ -22,6 +22,8 @@ public class SettingsActivity :
     public const val DEFAULT_AUTO_DISMISS = false
     public const val KEY_SEND_LABEL = "send_label"
     public const val DEFAULT_SEND_LABEL = true
+    public const val KEY_SCREEN_LOCKED_ONLY = "screen_locked_only"
+    public const val DEFAULT_SCREEN_LOCKED_ONLY = false
 
     val prefBinder = object : Preference.OnPreferenceChangeListener {
       override fun onPreferenceChange(
@@ -44,6 +46,15 @@ public class SettingsActivity :
                 R.string.pref_desc_send_label_yes
               } else {
                 R.string.pref_desc_send_label_no
+              },
+            )
+          }
+          KEY_SCREEN_LOCKED_ONLY -> {
+            pref.setSummary(
+              if (value == true) {
+                R.string.pref_desc_screen_locked_only_yes
+              } else {
+                R.string.pref_desc_screen_locked_only_no
               },
             )
           }

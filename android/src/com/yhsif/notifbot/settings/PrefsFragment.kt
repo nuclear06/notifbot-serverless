@@ -31,5 +31,13 @@ class PrefsFragment : BasePreferenceFragment() {
         SettingsActivity.DEFAULT_SEND_LABEL,
       )
     }
+
+    val prefScreenLockedOnly: Preference? = findPreference(SettingsActivity.KEY_SCREEN_LOCKED_ONLY)
+    if (prefScreenLockedOnly != null) {
+      SettingsActivity.bindPreferenceSummaryToBoolean(
+        prefScreenLockedOnly,
+        SettingsActivity.DEFAULT_SCREEN_LOCKED_ONLY,
+      )
+    }
   }
 }

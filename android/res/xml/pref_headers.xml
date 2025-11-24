@@ -21,4 +21,10 @@
       android:title="@string/pref_title_send_label"
       android:summary="@string/pref_desc_send_label_no"
     />
+  <SwitchPreference
+      android:defaultValue="false"
+      android:key="screen_locked_only"
+      android:title="@string/pref_title_screen_locked_only"
+      android:summary="@string/pref_desc_screen_locked_only_no"
+    />
 </androidx.preference.PreferenceScreen>

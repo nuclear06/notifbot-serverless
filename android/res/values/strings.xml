@@ -44,6 +44,13 @@
   <string name="pref_desc_send_label_no">
     Do not show app name in Telegram messages, only show notification content.
   </string>
+  <string name="pref_title_screen_locked_only">Send only when screen is locked</string>
+  <string name="pref_desc_screen_locked_only_yes">
+    Send notifications to Telegram only when the screen is locked.
+  </string>
+  <string name="pref_desc_screen_locked_only_no">
+    Send notifications regardless of screen state.
+  </string>
 
   <string name="pref_tag_about">pref_about</string>
   <string name="pref_header_about">About</string>
