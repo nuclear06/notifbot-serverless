@@ -9,8 +9,10 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.MenuItem
 import android.view.View
+import android.widget.CompoundButton
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.edit
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,7 +22,10 @@ class AppPickerActivity : AppCompatActivity(), View.OnClickListener {
 
   lateinit var adapter: AppPickerAdapter
   lateinit var allApps: List<PkgData>
+  lateinit var allAppsWithSystem: List<PkgData>
   lateinit var searchBox: EditText
+  lateinit var showSystemAppsSwitch: SwitchCompat
+  var showSystemApps: Boolean = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -30,6 +35,7 @@ class AppPickerActivity : AppCompatActivity(), View.OnClickListener {
     getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
 
     searchBox = findViewById(R.id.search_box)
+    showSystemAppsSwitch = findViewById(R.id.show_system_apps_switch)
     adapter = AppPickerAdapter(mutableListOf(), this)
     
     findViewById<RecyclerView>(R.id.app_list).let { rv ->
@@ -48,6 +54,11 @@ class AppPickerActivity : AppCompatActivity(), View.OnClickListener {
       
       override fun afterTextChanged(s: Editable?) {}
     })
+
+    showSystemAppsSwitch.setOnCheckedChangeListener { _: CompoundButton, isChecked: Boolean ->
+      showSystemApps = isChecked
+      filterApps(searchBox.text.toString())
+    }
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -63,26 +74,34 @@ class AppPickerActivity : AppCompatActivity(), View.OnClickListener {
     val existingPkgs = NotificationListener.getPkgSet(this)
     val defIcon = getDrawable(R.mipmap.default_icon)!!
 
-    allApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+    val installedApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
       .filter { appInfo ->
-        // Filter out system apps and already added apps
-        (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) == 0 && 
         !existingPkgs.contains(appInfo.packageName)
       }
       .map { appInfo ->
-        createPkgData(pm, appInfo, defIcon)
+        Pair(appInfo, createPkgData(pm, appInfo, defIcon))
       }
-      .sortedBy { it.name.lowercase() }
+      .sortedBy { it.second.name.lowercase() }
 
-    adapter.list = allApps.toMutableList()
-    adapter.notifyDataSetChanged()
+    // All apps including system apps
+    allAppsWithSystem = installedApps.map { it.second }
+
+    // Non-system apps only
+    allApps = installedApps
+      .filter { (appInfo, _) ->
+        (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) == 0
+      }
+      .map { it.second }
+
+    filterApps(searchBox.text.toString())
   }
 
   private fun filterApps(query: String) {
+    val sourceList = if (showSystemApps) allAppsWithSystem else allApps
     val filtered = if (query.isEmpty()) {
-      allApps
+      sourceList
     } else {
-      allApps.filter { 
+      sourceList.filter { 
         it.name.contains(query, ignoreCase = true) || 
         it.pkg.contains(query, ignoreCase = true)
       }

@@ -72,3 +72,4 @@ maven_install.json
 bundle_config.pb.json
 
 .vscode
+kls_database.db

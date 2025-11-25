@@ -25,6 +25,13 @@
       android:imeOptions="actionSearch"
       android:maxLines="1"
     />
+  <androidx.appcompat.widget.SwitchCompat
+      android:id="@+id/show_system_apps_switch"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:padding="@dimen/margin_half"
+      android:text="@string/show_system_apps"
+    />
   <androidx.recyclerview.widget.RecyclerView
       android:id="@+id/app_list"
       android:layout_width="match_parent"
