@@ -24,6 +24,8 @@ public class SettingsActivity :
     public const val DEFAULT_SEND_LABEL = true
     public const val KEY_SCREEN_LOCKED_ONLY = "screen_locked_only"
     public const val DEFAULT_SCREEN_LOCKED_ONLY = false
+    public const val KEY_TELEGRAM_ENDPOINT = "telegram_endpoint"
+    public const val DEFAULT_TELEGRAM_ENDPOINT = "https://api.telegram.org"
 
     val prefBinder = object : Preference.OnPreferenceChangeListener {
       override fun onPreferenceChange(
@@ -31,6 +33,10 @@ public class SettingsActivity :
         value: Any,
       ): Boolean {
         when (pref.getKey()) {
+          KEY_TELEGRAM_ENDPOINT -> {
+            val normalized = normalizeEndpoint(value.toString())
+            pref.summary = normalized
+          }
           KEY_AUTO_DISMISS -> {
             pref.setSummary(
               if (value == true) {
@@ -77,6 +83,42 @@ public class SettingsActivity :
           .getDefaultSharedPreferences(preference.getContext())
           .getBoolean(preference.getKey(), defaultValue),
       )
+    }
+
+    fun bindPreferenceSummaryToString(
+      preference: Preference,
+      defaultValue: String,
+    ) {
+      preference.setOnPreferenceChangeListener(prefBinder)
+      prefBinder.onPreferenceChange(
+        preference,
+        PreferenceManager
+          .getDefaultSharedPreferences(preference.getContext())
+          .getString(preference.getKey(), defaultValue)
+          ?: defaultValue,
+      )
+    }
+
+    fun getTelegramEndpoint(ctx: Context): String {
+      val raw = PreferenceManager
+        .getDefaultSharedPreferences(ctx)
+        .getString(KEY_TELEGRAM_ENDPOINT, DEFAULT_TELEGRAM_ENDPOINT)
+      return normalizeEndpoint(raw ?: DEFAULT_TELEGRAM_ENDPOINT)
+    }
+
+    private fun normalizeEndpoint(raw: String): String {
+      val trimmed = raw.trim()
+      if (trimmed.isEmpty()) {
+        return DEFAULT_TELEGRAM_ENDPOINT
+      }
+      val withScheme = if (
+        trimmed.startsWith("http://") || trimmed.startsWith("https://")
+      ) {
+        trimmed
+      } else {
+        "https://$trimmed"
+      }
+      return withScheme.trimEnd('/')
     }
 
     public fun adjustPaddingFor35Plus(ctx: Context, view: View) {

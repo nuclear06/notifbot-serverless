@@ -24,6 +24,14 @@ class PrefsFragment : BasePreferenceFragment() {
       )
     }
 
+    val prefTelegramEndpoint: Preference? = findPreference(SettingsActivity.KEY_TELEGRAM_ENDPOINT)
+    if (prefTelegramEndpoint != null) {
+      SettingsActivity.bindPreferenceSummaryToString(
+        prefTelegramEndpoint,
+        SettingsActivity.DEFAULT_TELEGRAM_ENDPOINT,
+      )
+    }
+
     val prefSendLabel: Preference? = findPreference(SettingsActivity.KEY_SEND_LABEL)
     if (prefSendLabel != null) {
       SettingsActivity.bindPreferenceSummaryToBoolean(

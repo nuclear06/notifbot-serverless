@@ -9,6 +9,14 @@
       android:fragment="com.yhsif.notifbot.settings.AboutPreferenceFragment"
       android:icon="@drawable/icon"
     />
+  <EditTextPreference
+      android:defaultValue="@string/pref_default_telegram_endpoint"
+      android:key="telegram_endpoint"
+      android:title="@string/pref_title_telegram_endpoint"
+      android:summary="@string/pref_desc_telegram_endpoint_default"
+      android:dialogTitle="@string/pref_title_telegram_endpoint"
+      android:inputType="textUri"
+    />
   <SwitchPreference
       android:defaultValue="false"
       android:key="auto_dismiss"

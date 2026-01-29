@@ -12,6 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.yhsif.notifbot.settings.SettingsActivity
 
 /**
  * Telegram configuration wizard activity.
@@ -96,7 +97,8 @@ class TelegramConfigActivity : AppCompatActivity() {
     nextButton.isEnabled = false
     
     CoroutineScope(Dispatchers.Main).launch {
-      val botInfo = TelegramApi.verifyBotToken(token)
+      val baseUrl = SettingsActivity.getTelegramEndpoint(this@TelegramConfigActivity)
+      val botInfo = TelegramApi.verifyBotToken(token, baseUrl)
       
       progressBar.visibility = View.GONE
       nextButton.isEnabled = true
@@ -131,7 +133,8 @@ class TelegramConfigActivity : AppCompatActivity() {
     showStep3()
     
     CoroutineScope(Dispatchers.Main).launch {
-      val chatInfo = TelegramApi.getChatId(verifiedToken!!)
+      val baseUrl = SettingsActivity.getTelegramEndpoint(this@TelegramConfigActivity)
+      val chatInfo = TelegramApi.getChatId(verifiedToken!!, baseUrl)
       
       progressBar.visibility = View.GONE
       

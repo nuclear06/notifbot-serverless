@@ -14,8 +14,7 @@ import java.util.concurrent.TimeUnit
  * Uses OkHttp (FOSS alternative to proprietary HTTP clients).
  */
 object TelegramApi {
-  
-  private const val BASE_URL = "https://api.telegram.org"
+
   private const val TAG = "TelegramApi"
   
   private val client by lazy {
@@ -43,9 +42,12 @@ object TelegramApi {
    * Verify bot token by calling /getMe API.
    * Returns bot information if token is valid.
    */
-  suspend fun verifyBotToken(token: String): BotInfo? = withContext(Dispatchers.IO) {
+  suspend fun verifyBotToken(
+    token: String,
+    baseUrl: String,
+  ): BotInfo? = withContext(Dispatchers.IO) {
     try {
-      val url = "$BASE_URL/bot$token/getMe"
+      val url = "${normalizeBaseUrl(baseUrl)}/bot$token/getMe"
       val request = Request.Builder()
         .url(url)
         .get()
@@ -78,9 +80,12 @@ object TelegramApi {
    * Get chat ID by calling /getUpdates API.
    * Returns chat information from the latest private message.
    */
-  suspend fun getChatId(token: String): ChatInfo? = withContext(Dispatchers.IO) {
+  suspend fun getChatId(
+    token: String,
+    baseUrl: String,
+  ): ChatInfo? = withContext(Dispatchers.IO) {
     try {
-      val url = "$BASE_URL/bot$token/getUpdates"
+      val url = "${normalizeBaseUrl(baseUrl)}/bot$token/getUpdates"
       val request = Request.Builder()
         .url(url)
         .get()
@@ -138,10 +143,11 @@ object TelegramApi {
   suspend fun sendMessage(
     token: String,
     chatId: Long,
-    text: String
+    text: String,
+    baseUrl: String,
   ): Boolean = withContext(Dispatchers.IO) {
     try {
-      val url = "$BASE_URL/bot$token/sendMessage"
+      val url = "${normalizeBaseUrl(baseUrl)}/bot$token/sendMessage"
       
       val requestBody = FormBody.Builder()
         .add("chat_id", chatId.toString())
@@ -160,5 +166,9 @@ object TelegramApi {
       Log.e(TAG, "Error sending message", e)
       return@withContext false
     }
+  }
+
+  private fun normalizeBaseUrl(baseUrl: String): String {
+    return baseUrl.trim().trimEnd('/')
   }
 }

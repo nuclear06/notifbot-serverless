@@ -13,6 +13,7 @@ import okhttp3.Request
 import okhttp3.Response
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import com.yhsif.notifbot.settings.SettingsActivity
 
 /**
  * Sends notifications directly to Telegram Bot API.
@@ -23,7 +24,6 @@ class TelegramSender {
   
   companion object {
     private const val TAG = "TelegramSender"
-    private const val BASE_URL = "https://api.telegram.org"
     
     private val client by lazy {
       OkHttpClient.Builder()
@@ -69,7 +69,8 @@ class TelegramSender {
             msg
           }
           
-          val url = "$BASE_URL/bot$token/sendMessage"
+          val baseUrl = SettingsActivity.getTelegramEndpoint(ctx)
+          val url = "$baseUrl/bot$token/sendMessage"
           
           val requestBody = FormBody.Builder()
             .add("chat_id", chatId.toString())
