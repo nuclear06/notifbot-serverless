@@ -47,5 +47,13 @@ class PrefsFragment : BasePreferenceFragment() {
         SettingsActivity.DEFAULT_SCREEN_LOCKED_ONLY,
       )
     }
+
+    val prefNetworkTimeout: Preference? = findPreference(SettingsActivity.KEY_NETWORK_TIMEOUT)
+    if (prefNetworkTimeout != null) {
+      SettingsActivity.bindPreferenceSummaryToString(
+        prefNetworkTimeout,
+        SettingsActivity.DEFAULT_NETWORK_TIMEOUT.toString(),
+      )
+    }
   }
 }

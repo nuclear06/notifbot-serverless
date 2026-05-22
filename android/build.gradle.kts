@@ -21,8 +21,8 @@ android {
         applicationId = "com.yhsif.notifbot"
         minSdk = 24
         targetSdk = 35
-        versionCode = 40
-        versionName = "0.10.3"
+        versionCode = 41
+        versionName = "0.11.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

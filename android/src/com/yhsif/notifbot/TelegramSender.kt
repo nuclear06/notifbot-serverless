@@ -25,12 +25,20 @@ class TelegramSender {
   companion object {
     private const val TAG = "TelegramSender"
     
-    private val client by lazy {
-      OkHttpClient.Builder()
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(10, TimeUnit.SECONDS)
-        .writeTimeout(10, TimeUnit.SECONDS)
-        .build()
+    private var lastTimeout: Long = -1L
+    private var _client: OkHttpClient? = null
+
+    private fun getClient(ctx: Context): OkHttpClient {
+      val timeout = SettingsActivity.getNetworkTimeout(ctx)
+      if (timeout != lastTimeout || _client == null) {
+        lastTimeout = timeout
+        _client = OkHttpClient.Builder()
+          .connectTimeout(timeout, TimeUnit.SECONDS)
+          .readTimeout(timeout, TimeUnit.SECONDS)
+          .writeTimeout(timeout, TimeUnit.SECONDS)
+          .build()
+      }
+      return _client!!
     }
     
     /**
@@ -82,7 +90,7 @@ class TelegramSender {
             .post(requestBody)
             .build()
           
-          client.newCall(request).enqueue(object : Callback {
+          getClient(ctx).newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
               Log.e(TAG, "Network error sending message", e)
               ErrorLogActivity.logError(

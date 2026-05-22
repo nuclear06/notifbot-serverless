@@ -17,6 +17,14 @@
       android:dialogTitle="@string/pref_title_telegram_endpoint"
       android:inputType="textUri"
     />
+  <EditTextPreference
+      android:defaultValue="30"
+      android:key="network_timeout"
+      android:title="@string/pref_title_network_timeout"
+      android:summary="@string/pref_desc_network_timeout"
+      android:dialogTitle="@string/pref_title_network_timeout"
+      android:inputType="number"
+    />
   <SwitchPreference
       android:defaultValue="false"
       android:key="auto_dismiss"

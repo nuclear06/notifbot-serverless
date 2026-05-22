@@ -24,6 +24,8 @@ public class SettingsActivity :
     public const val DEFAULT_SEND_LABEL = true
     public const val KEY_SCREEN_LOCKED_ONLY = "screen_locked_only"
     public const val DEFAULT_SCREEN_LOCKED_ONLY = false
+    public const val KEY_NETWORK_TIMEOUT = "network_timeout"
+    public const val DEFAULT_NETWORK_TIMEOUT = 30L
     public const val KEY_TELEGRAM_ENDPOINT = "telegram_endpoint"
     public const val DEFAULT_TELEGRAM_ENDPOINT = "https://api.telegram.org"
 
@@ -36,6 +38,9 @@ public class SettingsActivity :
           KEY_TELEGRAM_ENDPOINT -> {
             val normalized = normalizeEndpoint(value.toString())
             pref.summary = normalized
+          }
+          KEY_NETWORK_TIMEOUT -> {
+            pref.summary = "${value}s"
           }
           KEY_AUTO_DISMISS -> {
             pref.setSummary(
@@ -104,6 +109,15 @@ public class SettingsActivity :
         .getDefaultSharedPreferences(ctx)
         .getString(KEY_TELEGRAM_ENDPOINT, DEFAULT_TELEGRAM_ENDPOINT)
       return normalizeEndpoint(raw ?: DEFAULT_TELEGRAM_ENDPOINT)
+    }
+
+    fun getNetworkTimeout(ctx: Context): Long {
+      val raw = PreferenceManager
+        .getDefaultSharedPreferences(ctx)
+        .getString(KEY_NETWORK_TIMEOUT, DEFAULT_NETWORK_TIMEOUT.toString())
+      val timeout = raw?.toLongOrNull() ?: DEFAULT_NETWORK_TIMEOUT
+      // Clamp between 10s and 120s
+      return if (timeout < 10L) 10L else if (timeout > 120L) 120L else timeout
     }
 
     private fun normalizeEndpoint(raw: String): String {

@@ -38,6 +38,8 @@ class NotificationListener : NotificationListenerService() {
     private const val KEY_TEXT = "text"
     private const val KEY_TIMESTAMP = "timestamp"
     private const val DEDUP_TIME_WINDOW = 5000L // 5 seconds
+    private const val RETRY_DELAY_MS = 60000L // 1 minute
+    private const val TTL_MS = 3600000L // 1 hour
     private const val MAX_RANDOM_INT = 1000000
     private const val CHANNEL_ID = "service_connection_failure"
 
@@ -145,6 +147,14 @@ class NotificationListener : NotificationListenerService() {
     m
   }
 
+  val unlockReceiver = object : android.content.BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+      if (intent.action == Intent.ACTION_USER_PRESENT) {
+        clearRetryQueue()
+      }
+    }
+  }
+
   val onFailure: () -> Unit = {
     GlobalScope.launch(Dispatchers.Main) {
       ctx = this@NotificationListener
@@ -171,6 +181,7 @@ class NotificationListener : NotificationListenerService() {
   override fun onListenerConnected() {
     connected = true
     monitor
+    registerReceiver(unlockReceiver, android.content.IntentFilter(Intent.ACTION_USER_PRESENT))
     if (startMain) {
       val intent = Intent(this, MainActivity::class.java)
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -181,6 +192,9 @@ class NotificationListener : NotificationListenerService() {
   override fun onListenerDisconnected() {
     connected = false
     monitor
+    try {
+      unregisterReceiver(unlockReceiver)
+    } catch (_: Exception) {}
   }
 
   override fun onNotificationPosted(
@@ -231,15 +245,20 @@ class NotificationListener : NotificationListenerService() {
           return@forReturn
         }
 
-        val onNetFail = {
-          addToRetryQueue(
-            RetryTuple(
-              System.currentTimeMillis(),
-              label,
-              sbn.getKey(),
-              text,
-            ),
+        val onNetFail: () -> Unit = {
+          val tuple = RetryTuple(
+            System.currentTimeMillis(),
+            label,
+            sbn.getKey(),
+            text,
           )
+          addToRetryQueue(tuple)
+          // Delayed automatic retry
+          GlobalScope.launch {
+            kotlinx.coroutines.delay(RETRY_DELAY_MS)
+            retry()
+          }
+          Unit
         }
         TelegramSender.send(
           this@NotificationListener,
@@ -334,6 +353,16 @@ class NotificationListener : NotificationListenerService() {
     }
   }
 
+  fun clearRetryQueue() {
+    GlobalScope.launch(Dispatchers.Default) {
+      retryQueueLock.withLock {
+        getSharedPreferences(PREF_RETRY, 0).edit {
+          clear()
+        }
+      }
+    }
+  }
+
   fun generateKey(time: Long, label: String, key: String?): String =
     if (key != null) {
       "%015d-%s-%d-%s".format(time, label, rand.nextInt(MAX_RANDOM_INT), key)
@@ -342,9 +371,14 @@ class NotificationListener : NotificationListenerService() {
     }
 
   suspend fun retry() {
+    val now = System.currentTimeMillis()
     withContext(Dispatchers.Default) {
       for (tuple in getAndClearRetryQueue()) {
-        val (_, label, key, text) = tuple
+        val (time, label, key, text) = tuple
+        if (now - time > TTL_MS) {
+          // Skip expired notification
+          continue
+        }
         val onNetFail = { addToRetryQueue(tuple) }
         TelegramSender.send(
           this@NotificationListener,
