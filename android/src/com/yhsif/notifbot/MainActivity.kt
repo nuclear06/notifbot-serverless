@@ -31,10 +31,21 @@ import androidx.recyclerview.widget.RecyclerView
 import com.yhsif.notifbot.settings.SettingsActivity
 import kotlin.text.Regex
 
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
+
 class MainActivity :
   AppCompatActivity(),
   View.OnClickListener,
   TextView.OnEditorActionListener {
+
+  private val configLauncher = registerForActivityResult(
+    ActivityResultContracts.StartActivityForResult()
+  ) { result ->
+    if (result.resultCode == RESULT_OK) {
+      showToast(this, getString(R.string.telegram_config_success))
+    }
+  }
 
   companion object {
     const val PREF = "com.yhsif.notifbot"
@@ -219,9 +230,8 @@ class MainActivity :
           .setTitle(getString(R.string.telegram_config_needed_title))
           .setMessage(getString(R.string.telegram_config_needed_text))
           .setPositiveButton(android.R.string.ok) { _, _ ->
-            startActivityForResult(
-              Intent(this, TelegramConfigActivity::class.java),
-              REQUEST_CODE_CONFIG
+            configLauncher.launch(
+              Intent(this, TelegramConfigActivity::class.java)
             )
           }
           .setNegativeButton(android.R.string.cancel) { dialog, _ ->
@@ -233,13 +243,6 @@ class MainActivity :
     }
 
     refreshData()
-  }
-
-  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-    super.onActivityResult(requestCode, resultCode, data)
-    if (requestCode == REQUEST_CODE_CONFIG && resultCode == RESULT_OK) {
-      showToast(this, getString(R.string.telegram_config_success))
-    }
   }
 
   override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -256,9 +259,8 @@ class MainActivity :
       R.id.action_settings ->
         startActivity(Intent(this, SettingsActivity::class.java))
       R.id.action_telegram_config ->
-        startActivityForResult(
-          Intent(this, TelegramConfigActivity::class.java),
-          REQUEST_CODE_CONFIG
+        configLauncher.launch(
+          Intent(this, TelegramConfigActivity::class.java)
         )
       else -> return super.onOptionsItemSelected(item)
     }

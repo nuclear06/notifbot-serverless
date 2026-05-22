@@ -29,7 +29,7 @@ class AppPickerAdapter(
     super.onAttachedToRecyclerView(rv)
   }
 
-  fun filter(query: String) {
+  fun filter() {
     notifyDataSetChanged()
   }
 }

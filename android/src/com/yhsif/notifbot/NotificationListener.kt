@@ -18,8 +18,10 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.yhsif.notifbot.settings.SettingsActivity
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.security.SecureRandom
@@ -28,6 +30,9 @@ import kotlin.concurrent.withLock
 import kotlin.text.Regex
 
 class NotificationListener : NotificationListenerService() {
+  private val serviceJob = Job()
+  private val serviceScope = CoroutineScope(Dispatchers.Default + serviceJob)
+
   companion object {
     private const val PKG_SELF = "com.yhsif.notifbot"
     private const val NOTIF_ID = 0
@@ -156,7 +161,7 @@ class NotificationListener : NotificationListenerService() {
   }
 
   val onFailure: () -> Unit = {
-    GlobalScope.launch(Dispatchers.Main) {
+    serviceScope.launch(Dispatchers.Main) {
       ctx = this@NotificationListener
       ErrorLogActivity.logError(
         ctx,
@@ -197,6 +202,11 @@ class NotificationListener : NotificationListenerService() {
     } catch (_: Exception) {}
   }
 
+  override fun onDestroy() {
+    super.onDestroy()
+    serviceScope.cancel()
+  }
+
   override fun onNotificationPosted(
     sbn: StatusBarNotification,
     rm: NotificationListenerService.RankingMap,
@@ -224,7 +234,7 @@ class NotificationListener : NotificationListenerService() {
       }
     }
     
-    GlobalScope.launch(Dispatchers.Default) forReturn@{
+    serviceScope.launch(Dispatchers.Default) forReturn@{
       val pkg = sbn.getPackageName().lowercase()
       if (checkPackage(pkgs, pkg, sbn)) {
         val notif = sbn.getNotification()
@@ -254,7 +264,7 @@ class NotificationListener : NotificationListenerService() {
           )
           addToRetryQueue(tuple)
           // Delayed automatic retry
-          GlobalScope.launch {
+          serviceScope.launch {
             kotlinx.coroutines.delay(RETRY_DELAY_MS)
             retry()
           }
@@ -339,7 +349,7 @@ class NotificationListener : NotificationListenerService() {
   }
 
   fun addToRetryQueue(tuple: RetryTuple) {
-    GlobalScope.launch(Dispatchers.Default) {
+    serviceScope.launch(Dispatchers.Default) {
       retryQueueLock.withLock {
         val pref = getSharedPreferences(PREF_RETRY, 0)
         var key = generateKey(tuple.time, tuple.label, tuple.key)
@@ -354,7 +364,7 @@ class NotificationListener : NotificationListenerService() {
   }
 
   fun clearRetryQueue() {
-    GlobalScope.launch(Dispatchers.Default) {
+    serviceScope.launch(Dispatchers.Default) {
       retryQueueLock.withLock {
         getSharedPreferences(PREF_RETRY, 0).edit {
           clear()
@@ -394,7 +404,7 @@ class NotificationListener : NotificationListenerService() {
 
   fun onSuccess(key: String? = null): () -> Unit {
     return {
-      GlobalScope.launch(Dispatchers.Main) {
+      serviceScope.launch(Dispatchers.Main) {
         NotificationListener.cancelTelegramNotif(this@NotificationListener)
         if (key != null && connected && dismissNotification()) {
           cancelNotification(key)

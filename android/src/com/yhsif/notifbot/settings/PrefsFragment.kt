@@ -14,7 +14,6 @@ class PrefsFragment : BasePreferenceFragment() {
     rootKey: String?,
   ) {
     setPreferencesFromResource(R.xml.pref_headers, rootKey)
-    setHasOptionsMenu(true)
 
     val prefAutoDismiss: Preference? = findPreference(SettingsActivity.KEY_AUTO_DISMISS)
     if (prefAutoDismiss != null) {

@@ -9,6 +9,5 @@ class AboutPreferenceFragment : BasePreferenceFragment() {
     rootKey: String?,
   ) {
     setPreferencesFromResource(R.xml.pref_about, rootKey)
-    setHasOptionsMenu(true)
   }
 }
